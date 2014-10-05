@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
@@ -47,8 +46,12 @@ public class MainActivity extends Activity {
 
         protected void onPreExecute(){
             super.onPreExecute();
-            //showDialog(0);
-            progressDialog = (ProgressDialog)new MyDialogFrag().onCreateDialog(null);
+            progressDialog = new ProgressDialog(MainActivity.this);
+            progressDialog.setMessage("Downloading the file. Please wait...");
+            progressDialog.setIndeterminate(false);
+            progressDialog.setMax(100);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setCancelable(true);
             progressDialog.show();
         }
 
@@ -80,30 +83,18 @@ public class MainActivity extends Activity {
         }
 
         protected void onProgressUpdate(String...progress){
-            progressDialog.setProgress(Integer.parseInt(progress[0]));
+            if (progressDialog != null){
+                progressDialog.setProgress(Integer.parseInt(progress[0]));
+            }
         }
 
         protected void onPostExecute(String file_url){
-            //dismissDialog(0);
-            progressDialog.dismiss();
+            if (progressDialog != null){
+                progressDialog.dismiss();
+            }
             String imgPath = Environment.getExternalStorageDirectory() + "/downloadedfile.jpg";
             imageView.setImageDrawable(Drawable.createFromPath(imgPath));
         }
     }
 
-    class MyDialogFrag extends DialogFragment{
-        MyDialogFrag newInstance(String title){
-            MyDialogFrag frag = new MyDialogFrag();
-            return frag;
-        }
-        public Dialog onCreateDialog(Bundle bundle){
-            ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
-            progressDialog.setMessage("Downloading the file. Please wait...");
-            progressDialog.setIndeterminate(false);
-            progressDialog.setMax(100);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.setCancelable(true);
-            return progressDialog;
-        }
-    }
 }

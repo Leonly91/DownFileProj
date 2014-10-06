@@ -6,7 +6,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -40,6 +42,19 @@ public class MainActivity extends Activity {
                 new DownloadFromUrl().execute(file_url);
             }
         });
+
+        Button showDialogBtn = (Button)findViewById(R.id.show_dialog_btn);
+        showDialogBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialog();
+            }
+        });
+    }
+
+    private void showDialog(){
+        MyDialog myDialog = new MyDialog();
+        myDialog.show(getFragmentManager(), "MyDialog");
     }
 
     class DownloadFromUrl extends AsyncTask<String, String, String>{
@@ -94,6 +109,25 @@ public class MainActivity extends Activity {
             }
             String imgPath = Environment.getExternalStorageDirectory() + "/downloadedfile.jpg";
             imageView.setImageDrawable(Drawable.createFromPath(imgPath));
+        }
+    }
+
+    class MyDialog extends DialogFragment{
+
+        public Dialog onCreateDialog(Bundle bundle){
+            Dialog dialog = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("MyDialog")
+                    .setMessage("Hello")
+                    .setPositiveButton("Yes", null)
+                    .setNegativeButton("Cancel", null)
+                    .setCancelable(false)
+                    .create();
+            return dialog;
+        }
+
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState){
+            return null;
         }
     }
 

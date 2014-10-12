@@ -11,13 +11,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
     private Button showProgressBtn;
@@ -50,11 +58,62 @@ public class MainActivity extends Activity {
                 showDialog();
             }
         });
+
+        Button sendHttpBtn = (Button)findViewById(R.id.http_btn);
+        sendHttpBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new MyHttpPost().execute();
+            }
+        });
     }
 
     private void showDialog(){
         MyDialog myDialog = new MyDialog();
         myDialog.show(getFragmentManager(), "MyDialog");
+    }
+
+    private void SendHttpRequest(){
+        Log.v("com.example.DownFileProj", "SendHttpRequest execute.....");
+
+        HttpClient httpClient = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost("http://www.example.com/login");
+
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+        nameValuePairs.add(new BasicNameValuePair("email", "user@gmail.com"));
+        nameValuePairs.add(new BasicNameValuePair("message", "Hi ! Trying send Android Httppost"));
+
+        try{
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            HttpResponse httpResponse = httpClient.execute(httpPost);
+//            Log.d("com.example.DownFileProj", httpResponse.getAllHeaders().toString());
+
+            if (httpResponse.getStatusLine().getStatusCode() == 200){
+                String result = EntityUtils.toString(httpResponse.getEntity());
+                Log.d("com.example.DownFileProj", "Respon" + result.replace("\r", ""));
+//                Toast.makeText(MainActivity.this, "Respon:"+result.replace("\r", ""), Toast.LENGTH_SHORT).show();
+            }
+            else{
+//                Toast.makeText(MainActivity.this, "Err Resp:" + httpResponse.getStatusLine(), Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("com.example.DownFileProj", "ex:"+e.getMessage());
+        }
+    }
+
+    class MyHttpPost extends AsyncTask<String, String, String>{
+
+        @Override
+        protected String doInBackground(String... strings) {
+            SendHttpRequest();
+            return null;
+        }
     }
 
     class DownloadFromUrl extends AsyncTask<String, String, String>{
@@ -94,7 +153,7 @@ public class MainActivity extends Activity {
             }catch(Exception e){
                 Log.e("Error:", e.getMessage());
             }
-            return null;
+            return "return from doInBackground";
         }
 
         protected void onProgressUpdate(String...progress){
@@ -107,6 +166,7 @@ public class MainActivity extends Activity {
             if (progressDialog != null){
                 progressDialog.dismiss();
             }
+            Log.v("DownloadFromUrl", "onPostExecute:" + file_url);
             String imgPath = Environment.getExternalStorageDirectory() + "/downloadedfile.jpg";
             imageView.setImageDrawable(Drawable.createFromPath(imgPath));
         }
